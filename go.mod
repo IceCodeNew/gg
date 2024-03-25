@@ -60,8 +60,6 @@ require (
 )
 
 replace (
-	//github.com/mzz2017/softwind => ../softwind
-
 	github.com/spf13/cobra => github.com/mzz2017/cobra v0.0.0-20211205075040-2b7f80d9e0b4
 	github.com/spf13/pflag => github.com/mzz2017/pflag v0.0.0-20211204030847-74e9419ee6b3
 )
