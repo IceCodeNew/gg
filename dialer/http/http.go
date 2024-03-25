@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/mzz2017/gg/common"
 	"github.com/mzz2017/gg/dialer"
-	"github.com/mzz2017/softwind/protocol/http"
+	"github.com/daeuniverse/softwind/protocol/http"
 	"gopkg.in/yaml.v3"
 	"net"
 	"net/url"
