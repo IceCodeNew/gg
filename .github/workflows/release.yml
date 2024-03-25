@@ -104,7 +104,7 @@ jobs:
           openssl dgst -sha256 $FILE | sed 's/([^)]*)//g' >>$DGST
           openssl dgst -sha512 $FILE | sed 's/([^)]*)//g' >>$DGST
       - name: Upload files to Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: gg-${{ steps.get_filename.outputs.ASSET_NAME }}
           path: gg-${{ steps.get_filename.outputs.ASSET_NAME }}
