@@ -12,7 +12,7 @@ require (
 	github.com/nadoo/glider v0.16.4
 	github.com/pelletier/go-toml v1.9.5
 	github.com/sirupsen/logrus v1.9.3
-	github.com/spf13/cobra v1.2.1
+	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.16.0
 	github.com/v2rayA/shadowsocksR v1.0.4
 	golang.org/x/net v0.28.0
