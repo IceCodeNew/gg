@@ -11,7 +11,7 @@ require (
 	github.com/mzz2017/softwind v0.0.0-20230212090240-561c250bc5c4
 	github.com/nadoo/glider v0.16.2
 	github.com/pelletier/go-toml v1.9.4
-	github.com/sirupsen/logrus v1.8.1
+	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.16.0
 	github.com/v2rayA/shadowsocksR v1.0.4
