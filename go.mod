@@ -4,7 +4,7 @@ go 1.24
 
 require (
 	github.com/1lann/promptui v0.8.1-0.20220708222609-81fad96dd5e1
-	github.com/AlecAivazis/survey/v2 v2.3.2
+	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/fatih/structs v1.1.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/json-iterator/go v1.1.12
