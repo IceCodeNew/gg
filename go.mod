@@ -16,7 +16,7 @@ require (
 	github.com/spf13/viper v1.20.1
 	github.com/v2rayA/shadowsocksR v1.0.4
 	golang.org/x/net v0.33.0
-	golang.org/x/sys v0.29.0
+	golang.org/x/sys v0.35.0
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d
 	gopkg.in/yaml.v3 v3.0.1
 )
