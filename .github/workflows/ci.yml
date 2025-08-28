@@ -7,6 +7,8 @@ on:
     - 'master'
   workflow_dispatch:
 
+env:
+  KO_DOCKER_REPO: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/gg
 
 jobs:
   publish:
@@ -30,12 +32,10 @@ jobs:
           curl -o '.ko.yaml' -- \
               https://raw.githubusercontent.com/IceCodeNew/docker-collections/master/default.ko.yaml
 
-      - uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3.5.0
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - uses: ko-build/setup-ko@d006021bd0c28d1ce33a07e7943d48b079944c8d # v0.9
-        env:
-          KO_DOCKER_REPO: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/gg
-      - run: ko build --platform=linux/amd64,linux/arm64 --bare ./
+      - run: ko build --local --platform=linux/amd64,linux/arm64 --bare ./
+
+      -
+        name: Smoke Test
+        run: |
+          docker run --rm "${{ env.KO_DOCKER_REPO }}:latest" --help
