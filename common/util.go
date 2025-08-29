@@ -51,7 +51,7 @@ func Base64URLDecode(s string) (string, error) {
 	return string(raw), nil
 }
 
-func ObjectToKV(v interface{}, tagName string) (kv []string) {
+func ObjectToKV(v any, tagName string) (kv []string) {
 	a := structs.New(v)
 	if tagName != "" {
 		a.TagName = tagName
@@ -59,13 +59,13 @@ func ObjectToKV(v interface{}, tagName string) (kv []string) {
 	return MapToKV(a.Map())
 }
 
-func MapToKV(m map[string]interface{}) (kv []string) {
+func MapToKV(m map[string]any) (kv []string) {
 	val := reflect.ValueOf(m)
 	keys := val.MapKeys()
 	for _, k := range keys {
 		v := val.MapIndex(k)
 		switch v := v.Interface().(type) {
-		case map[string]interface{}:
+		case map[string]any:
 			subKV := MapToKV(v)
 			for _, s := range subKV {
 				kv = append(kv, fmt.Sprintf("%v.%v", k.String(), s))
@@ -116,7 +116,7 @@ func Max(a, b int) int {
 	return b
 }
 
-func MustGetMapKeys(m interface{}) (keys []string) {
+func MustGetMapKeys(m any) (keys []string) {
 	v := reflect.ValueOf(m)
 	vKeys := v.MapKeys()
 	for _, k := range vKeys {

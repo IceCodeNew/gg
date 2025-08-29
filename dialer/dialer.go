@@ -106,7 +106,7 @@ func FromClashRegister(name string, creator FromClashCreator) {
 }
 
 func NewFromClash(clashObj *yaml.Node, opt *GlobalOption) (dialer *Dialer, err error) {
-	preUnload := make(map[string]interface{})
+	preUnload := make(map[string]any)
 	if err := clashObj.Decode(&preUnload); err != nil {
 		return nil, err
 	}

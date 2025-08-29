@@ -170,8 +170,8 @@ func ParseSSRURL(u string) (data *ShadowsocksR, err error) {
 
 func (s *ShadowsocksR) ExportToURL() string {
 	/* ssr://server:port:proto:method:obfs:URLBASE64(password)/?remarks=URLBASE64(remarks)&protoparam=URLBASE64(protoparam)&obfsparam=URLBASE64(obfsparam)) */
-	return fmt.Sprintf("ssr://%v", strings.TrimSuffix(base64.URLEncoding.EncodeToString([]byte(
-		fmt.Sprintf(
+	return fmt.Sprintf("ssr://%v", strings.TrimSuffix(base64.URLEncoding.EncodeToString(
+		fmt.Appendf(nil,
 			"%v:%v:%v:%v:%v/?remarks=%v&protoparam=%v&obfsparam=%v",
 			net.JoinHostPort(s.Server, strconv.Itoa(s.Port)),
 			s.Proto,
@@ -182,5 +182,5 @@ func (s *ShadowsocksR) ExportToURL() string {
 			base64.URLEncoding.EncodeToString([]byte(s.ProtoParam)),
 			base64.URLEncoding.EncodeToString([]byte(s.ObfsParam)),
 		),
-	)), "="))
+	), "="))
 }

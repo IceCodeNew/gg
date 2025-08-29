@@ -188,7 +188,7 @@ func ParseClashVMess(o *yaml.Node) (data *V2Ray, err error) {
 		TLS            bool         `yaml:"tls,omitempty"`
 		SkipCertVerify bool         `yaml:"skip-cert-verify,omitempty"`
 		ServerName     string       `yaml:"servername,omitempty"`
-		HTTPOpts       interface{}  `yaml:"http-opts,omitempty"`
+		HTTPOpts       any          `yaml:"http-opts,omitempty"`
 		HTTP2Opts      HTTP2Options `yaml:"h2-opts,omitempty"`
 		GrpcOpts       GrpcOptions  `yaml:"grpc-opts,omitempty"`
 		WSOpts         WSOptions    `yaml:"ws-opts,omitempty"`
