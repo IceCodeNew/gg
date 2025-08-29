@@ -56,10 +56,7 @@ func (to *TLSObfs) Read(b []byte) (int, error) {
 	to.rMu.Lock()
 	defer to.rMu.Unlock()
 	if to.remain > 0 {
-		length := to.remain
-		if length > len(b) {
-			length = len(b)
-		}
+		length := min(to.remain, len(b))
 
 		n, err := io.ReadFull(to.Conn, b[:length])
 		to.remain -= n
@@ -82,10 +79,7 @@ func (to *TLSObfs) Write(b []byte) (int, error) {
 	defer to.wMu.Unlock()
 	length := len(b)
 	for i := 0; i < length; i += chunkSize {
-		end := i + chunkSize
-		if end > length {
-			end = length
-		}
+		end := min(i+chunkSize, length)
 
 		n, err := to.write(b[i:end])
 		if err != nil {
