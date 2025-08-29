@@ -1,11 +1,6 @@
 {
-  "ignoreDeps": [
-    "github.com/spf13/cobra",
-    "github.com/mzz2017/cobra"
-  ],
   "timezone": "Asia/Shanghai",
   "extends": [
-    "forkProcessing:enabled",
     "schedule:earlyMondays",
     "config:recommended",
     // "docker:pinDigests",
@@ -13,5 +8,9 @@
     ":configMigration",
     ":pinDevDependencies",
     "security:openssf-scorecard",
+  ],
+  "postUpdateOptions": [
+    "gomodMassage",
+    // "gomodUpdateImportPaths",  // implicate "gomodTidy"
   ],
 }
