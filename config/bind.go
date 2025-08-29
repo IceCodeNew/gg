@@ -18,18 +18,18 @@ var (
 type Binder struct {
 	viper     *viper.Viper
 	toResolve map[string]string
-	resolved  map[string]interface{}
+	resolved  map[string]any
 }
 
 func NewBinder(viper *viper.Viper) *Binder {
 	return &Binder{
 		viper:     viper,
 		toResolve: make(map[string]string),
-		resolved:  make(map[string]interface{}),
+		resolved:  make(map[string]any),
 	}
 }
 
-func (b *Binder) Bind(iface interface{}) error {
+func (b *Binder) Bind(iface any) error {
 	if err := b.bind(iface); err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (b *Binder) Bind(iface interface{}) error {
 	return nil
 }
 
-func (b *Binder) bind(iface interface{}, parts ...string) error {
+func (b *Binder) bind(iface any, parts ...string) error {
 	// https://github.com/spf13/viper/issues/188
 	ifv := reflect.ValueOf(iface)
 	ift := reflect.TypeOf(iface)
@@ -109,21 +109,21 @@ func (b *Binder) bindKey(key string, expr string) (ok bool, err error) {
 	return true, nil
 }
 
-func SetValueHierarchicalMap(m map[string]interface{}, key string, val interface{}) error {
+func SetValueHierarchicalMap(m map[string]any, key string, val any) error {
 	keys := strings.Split(key, ".")
 	lastKey := keys[len(keys)-1]
 	keys = keys[:len(keys)-1]
 	p := &m
 	for _, key := range keys {
 		if v, ok := (*p)[key]; ok {
-			vv, ok := v.(map[string]interface{})
+			vv, ok := v.(map[string]any)
 			if !ok {
 				return ErrOverlayHierarchicalKey
 			}
 			p = &vv
 		} else {
-			(*p)[key] = make(map[string]interface{})
-			vv := (*p)[key].(map[string]interface{})
+			(*p)[key] = make(map[string]any)
+			vv := (*p)[key].(map[string]any)
 			p = &vv
 		}
 	}
@@ -131,7 +131,7 @@ func SetValueHierarchicalMap(m map[string]interface{}, key string, val interface
 	return nil
 }
 
-func SetValueHierarchicalStruct(m interface{}, key string, val string) error {
+func SetValueHierarchicalStruct(m any, key string, val string) error {
 	ifv, err := GetValueHierarchicalStruct(m, key)
 	if err != nil {
 		return err
@@ -142,7 +142,7 @@ func SetValueHierarchicalStruct(m interface{}, key string, val string) error {
 	return nil
 }
 
-func GetValueHierarchicalStruct(m interface{}, key string) (reflect.Value, error) {
+func GetValueHierarchicalStruct(m any, key string) (reflect.Value, error) {
 	keys := strings.Split(key, ".")
 	ifv := reflect.Indirect(reflect.ValueOf(m))
 	ift := ifv.Type()
@@ -168,7 +168,7 @@ func GetValueHierarchicalStruct(m interface{}, key string) (reflect.Value, error
 	return ifv, nil
 }
 
-func FuzzyDecode(to interface{}, val string) bool {
+func FuzzyDecode(to any, val string) bool {
 	v := reflect.Indirect(reflect.ValueOf(to))
 	switch v.Kind() {
 	case reflect.Int:

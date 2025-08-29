@@ -1,12 +1,12 @@
 package tracer
 
-type Storehouse map[int]map[int]interface{}
+type Storehouse map[int]map[int]any
 
 func MakeStorehouse() Storehouse {
 	return make(Storehouse)
 }
 
-func (s Storehouse) Get(pid int, syscallNumber int) (v interface{}, ok bool) {
+func (s Storehouse) Get(pid int, syscallNumber int) (v any, ok bool) {
 	if _, ok := s[pid]; !ok {
 		return nil, false
 	}
@@ -17,9 +17,9 @@ func (s Storehouse) Get(pid int, syscallNumber int) (v interface{}, ok bool) {
 	return m, true
 }
 
-func (t Storehouse) Save(pid int, syscallNumber int, v interface{}) {
+func (t Storehouse) Save(pid int, syscallNumber int, v any) {
 	if t[pid] == nil {
-		t[pid] = make(map[int]interface{})
+		t[pid] = make(map[int]any)
 	}
 	t[pid][syscallNumber] = v
 }
