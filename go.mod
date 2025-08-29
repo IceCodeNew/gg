@@ -10,7 +10,8 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/mzz2017/softwind v0.0.0-20230212090240-561c250bc5c4
 	github.com/nadoo/glider v0.16.4
-	github.com/pelletier/go-toml v1.9.5
+	github.com/pelletier/go-toml v1.9.3
+	github.com/pelletier/go-toml/v2 v2.2.4
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.20.1
@@ -43,7 +44,6 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/mzz2017/disk-bloom v1.0.1 // indirect
-	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
 	github.com/seiflotfy/cuckoofilter v0.0.0-20201222105146-bc6005554a0c // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
