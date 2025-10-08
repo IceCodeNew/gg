@@ -1,6 +1,6 @@
 module github.com/mzz2017/gg
 
-go 1.24
+go 1.24.0
 
 require (
 	github.com/1lann/promptui v0.8.1-0.20220708222609-81fad96dd5e1
@@ -16,7 +16,7 @@ require (
 	github.com/spf13/viper v1.20.1
 	github.com/v2rayA/shadowsocksR v1.0.4
 	golang.org/x/net v0.43.0
-	golang.org/x/sys v0.35.0
+	golang.org/x/sys v0.37.0
 	golang.org/x/tools v0.36.0
 	gopkg.in/yaml.v3 v3.0.1
 )
