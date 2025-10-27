@@ -1,6 +1,6 @@
 module github.com/mzz2017/gg
 
-go 1.24
+go 1.24.0
 
 require (
 	github.com/1lann/promptui v0.8.1-0.20220708222609-81fad96dd5e1
@@ -15,9 +15,9 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/viper v1.20.1
 	github.com/v2rayA/shadowsocksR v1.0.4
-	golang.org/x/net v0.43.0
-	golang.org/x/sys v0.35.0
-	golang.org/x/tools v0.36.0
+	golang.org/x/net v0.46.0
+	golang.org/x/sys v0.37.0
+	golang.org/x/tools v0.38.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -51,9 +51,9 @@ require (
 	gitlab.com/yawning/chacha20.git v0.0.0-20190903091407-6d1cb28dc72c // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
-	golang.org/x/crypto v0.41.0 // indirect
-	golang.org/x/term v0.34.0 // indirect
-	golang.org/x/text v0.28.0 // indirect
+	golang.org/x/crypto v0.43.0 // indirect
+	golang.org/x/term v0.36.0 // indirect
+	golang.org/x/text v0.30.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241223144023-3abc09e42ca8 // indirect
 	google.golang.org/grpc v1.67.3 // indirect
 	google.golang.org/protobuf v1.36.1 // indirect
