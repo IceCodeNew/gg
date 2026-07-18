@@ -29,6 +29,21 @@ jobs:
           cache: false
           go-version-file: 'go.mod'
 
+      - name: Test
+        run: go test ./...
+
+      - name: Test YAML compatibility module
+        run: go -C compat/yamlv3 test ./...
+
+      - name: Test downstream YAML API compatibility
+        shell: bash
+        run: |
+          consumer_dir=$(mktemp -d)
+          cp -R testdata/downstream/. "${consumer_dir}"
+          go -C "${consumer_dir}" mod edit \
+              -replace github.com/mzz2017/gg="${GITHUB_WORKSPACE}"
+          go -C "${consumer_dir}" test -mod=mod ./...
+
       - name: pre-start
         shell: bash
         run: |

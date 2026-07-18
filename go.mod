@@ -2,6 +2,10 @@ module github.com/mzz2017/gg
 
 go 1.26
 
+// Root builds preserve the public YAML v3 type identity while using the maintained implementation.
+// Downstream modules retain their independently selected gopkg.in/yaml.v3 implementation.
+replace gopkg.in/yaml.v3 => ./compat/yamlv3
+
 require (
 	github.com/1lann/promptui v0.8.1-0.20220708222609-81fad96dd5e1
 	github.com/AlecAivazis/survey/v2 v2.3.7
