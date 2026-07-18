@@ -84,13 +84,23 @@ func (b *fuzzyBool) UnmarshalJSON(data []byte) error {
 		if err := json.Unmarshal(data, &value); err != nil {
 			return err
 		}
-		*b = fuzzyBool(common.StringToBool(value))
-		return nil
+		switch strings.ToLower(value) {
+		case "true", "yes", "1", "y":
+			*b = true
+			return nil
+		case "false", "no", "0", "n":
+			*b = false
+			return nil
+		default:
+			return fmt.Errorf("expected boolean string, got %q", value)
+		}
 	}
 	return fmt.Errorf("expected boolean, 0, 1, string, or null")
 }
 
 func unmarshalV2Ray(data []byte, result *V2Ray) error {
+	// Keep this decoding mirror in sync with V2Ray; the full round-trip test
+	// covers every serializable field.
 	var decoded struct {
 		Ps            fuzzyString `json:"ps"`
 		Add           fuzzyString `json:"add"`
