@@ -11,8 +11,6 @@ import (
 	"time"
 
 	"charm.land/huh/v2"
-	"github.com/AlecAivazis/survey/v2"
-	"github.com/mzz2017/gg/common"
 	"github.com/mzz2017/gg/config"
 	"github.com/mzz2017/gg/dialer"
 	"github.com/sirupsen/logrus"
@@ -20,7 +18,10 @@ import (
 	"golang.org/x/tools/container/intsets"
 )
 
-var UnableToConnectErr = fmt.Errorf("unable to connect to the proxy node")
+var (
+	UnableToConnectErr   = fmt.Errorf("unable to connect to the proxy node")
+	errShareLinkRequired = errors.New("share-link is required")
+)
 
 type DialerWithLatency struct {
 	Dialer  *dialer.Dialer
@@ -69,15 +70,32 @@ func GetDialerFromLink(nodeLink string, opt *dialer.GlobalOption, testNode bool,
 }
 
 func GetDialerFromInput(opt *dialer.GlobalOption, testNode bool, testURL string) (d *dialer.Dialer, err error) {
-	var link string
-	// FIXME: Is it really necessary to introduce another one library?
-	err = survey.AskOne(&survey.Input{
-		Message: "Enter the share-link of your proxy:",
-	}, &link, common.SetRequire)
+	link, err := promptForNodeLink(func(input *huh.Input) error {
+		return input.Run()
+	})
 	if err != nil {
 		return nil, err
 	}
-	return GetDialerFromLink(strings.TrimSpace(link), opt, testNode, testURL)
+	return GetDialerFromLink(link, opt, testNode, testURL)
+}
+
+func promptForNodeLink(run func(*huh.Input) error) (string, error) {
+	var link string
+	input := huh.NewInput().
+		Title("Enter the share-link of your proxy:").
+		Value(&link).
+		Validate(validateShareLink)
+	if err := run(input); err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(link), nil
+}
+
+func validateShareLink(link string) error {
+	if strings.TrimSpace(link) == "" {
+		return errShareLinkRequired
+	}
+	return nil
 }
 
 func GetDialerFromSubscription(log *logrus.Logger, opt *dialer.GlobalOption, testNode bool, testURL string) (d *dialer.Dialer, err error) {
