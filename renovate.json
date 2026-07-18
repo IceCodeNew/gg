@@ -40,7 +40,7 @@
       "minimumReleaseAge": null
     }
   ],
-  "automergeType": "pr",
+  "automergeType": "branch",
   "postUpdateOptions": [
     "gomodMassage",
     "gomodTidy"
