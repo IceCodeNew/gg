@@ -46,6 +46,38 @@ func TestSelectNodeReturnsRunnerError(t *testing.T) {
 	}
 }
 
+func TestPromptForNodeLink(t *testing.T) {
+	link, err := promptForNodeLink(func(input *huh.Input) error {
+		return input.RunAccessible(
+			&bytes.Buffer{},
+			strings.NewReader("   \n  socks5://127.0.0.1:1080  \n"),
+		)
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if link != "socks5://127.0.0.1:1080" {
+		t.Fatalf("link = %q, want trimmed SOCKS link", link)
+	}
+}
+
+func TestPromptForNodeLinkReturnsRunnerError(t *testing.T) {
+	wantErr := errors.New("input failed")
+	_, err := promptForNodeLink(func(*huh.Input) error { return wantErr })
+	if !errors.Is(err, wantErr) {
+		t.Fatalf("error = %v, want %v", err, wantErr)
+	}
+}
+
+func TestValidateShareLink(t *testing.T) {
+	if err := validateShareLink(" \t "); !errors.Is(err, errShareLinkRequired) {
+		t.Fatalf("whitespace error = %v, want %v", err, errShareLinkRequired)
+	}
+	if err := validateShareLink("socks5://127.0.0.1:1080"); err != nil {
+		t.Fatalf("valid link error = %v", err)
+	}
+}
+
 func TestNodeDetails(t *testing.T) {
 	node := &DialerWithLatency{
 		Dialer:  dialer.NewDialer(nil, true, "test-node", "socks5", ""),
