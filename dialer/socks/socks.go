@@ -1,15 +1,18 @@
 package socks
 
 import (
+	"context"
 	"fmt"
-	"github.com/mzz2017/gg/dialer"
-	"github.com/nadoo/glider/proxy"
-	"github.com/nadoo/glider/proxy/socks4"
-	"github.com/nadoo/glider/proxy/socks5"
-	"gopkg.in/yaml.v3"
 	"net"
 	"net/url"
 	"strconv"
+
+	"github.com/mzz2017/gg/dialer"
+	M "github.com/sagernet/sing/common/metadata"
+	N "github.com/sagernet/sing/common/network"
+	singSocks "github.com/sagernet/sing/protocol/socks"
+	"golang.org/x/net/proxy"
+	"gopkg.in/yaml.v3"
 )
 
 func init() {
@@ -30,6 +33,26 @@ type Socks struct {
 	UDP      bool   `json:"udp"`
 }
 
+type singDialer struct {
+	client *singSocks.Client
+}
+
+func (d *singDialer) Dial(network, address string) (net.Conn, error) {
+	return d.DialContext(context.Background(), network, address)
+}
+
+func (d *singDialer) DialContext(ctx context.Context, network, address string) (net.Conn, error) {
+	return d.client.DialContext(ctx, network, M.ParseSocksaddr(address))
+}
+
+func newSingDialer(rawURL string, next N.Dialer) (proxy.Dialer, error) {
+	client, err := singSocks.NewClientFromURL(next, rawURL)
+	if err != nil {
+		return nil, err
+	}
+	return &singDialer{client: client}, nil
+}
+
 func NewSocks(link string, opt *dialer.GlobalOption) (*dialer.Dialer, error) {
 	s, err := ParseSocksURL(link)
 	if err != nil {
@@ -47,23 +70,28 @@ func NewSocks5FromClashObj(o *yaml.Node, opt *dialer.GlobalOption) (*dialer.Dial
 }
 
 func (s *Socks) Dialer() (*dialer.Dialer, error) {
+	protocol := s.Protocol
 	link := s.ExportToURL()
-	switch s.Protocol {
-	case "", "socks", "socks5":
-		d, err := socks5.NewSocks5Dialer(link, &proxy.Direct{})
-		if err != nil {
-			return nil, err
-		}
-		return dialer.NewDialer(d, s.UDP, s.Name, s.Protocol, link), nil
-	case "socks4", "socks4a":
-		d, err := socks4.NewSocks4Dialer(link, &proxy.Direct{})
-		if err != nil {
-			return nil, err
-		}
-		return dialer.NewDialer(d, false, s.Name, s.Protocol, link), nil
-	default:
-		return nil, fmt.Errorf("unexpected protocol: %v", s.Protocol)
+	if protocol == "" {
+		protocol = "socks5"
+		canonical := *s
+		canonical.Protocol = protocol
+		link = canonical.ExportToURL()
 	}
+	supportUDP := s.UDP
+	switch protocol {
+	case "socks", "socks4", "socks4a", "socks5":
+		if protocol == "socks4" || protocol == "socks4a" {
+			supportUDP = false
+		}
+	default:
+		return nil, fmt.Errorf("unexpected protocol: %v", protocol)
+	}
+	d, err := newSingDialer(link, N.SystemDialer)
+	if err != nil {
+		return nil, err
+	}
+	return dialer.NewDialer(d, supportUDP, s.Name, protocol, link), nil
 }
 
 func ParseClashSocks5(o *yaml.Node) (data *Socks, err error) {
@@ -135,10 +163,15 @@ func (s *Socks) ExportToURL() string {
 	} else {
 		user = url.User(s.Username)
 	}
+	query := url.Values{}
+	if (s.Protocol == "socks" || s.Protocol == "socks5") && !s.UDP {
+		query.Set("udp", "false")
+	}
 	u := url.URL{
 		Scheme:   s.Protocol,
 		User:     user,
 		Host:     net.JoinHostPort(s.Server, strconv.Itoa(s.Port)),
+		RawQuery: query.Encode(),
 		Fragment: s.Name,
 	}
 	return u.String()
