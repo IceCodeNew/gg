@@ -3,9 +3,9 @@ package common
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/fatih/structs"
 	"net/url"
 	"reflect"
+	"slices"
 	"strings"
 )
 
@@ -52,11 +52,53 @@ func Base64URLDecode(s string) (string, error) {
 }
 
 func ObjectToKV(v any, tagName string) (kv []string) {
-	a := structs.New(v)
-	if tagName != "" {
-		a.TagName = tagName
+	value := reflect.ValueOf(v)
+	for value.IsValid() && value.Kind() == reflect.Ptr {
+		if value.IsNil() {
+			return nil
+		}
+		value = value.Elem()
 	}
-	return MapToKV(a.Map())
+	if !value.IsValid() || value.Kind() != reflect.Struct {
+		return nil
+	}
+	return appendStructKV(nil, value, tagName, "")
+}
+
+func appendStructKV(kv []string, value reflect.Value, tagName, prefix string) []string {
+	typeOfValue := value.Type()
+	for i := 0; i < value.NumField(); i++ {
+		fieldType := typeOfValue.Field(i)
+		if !fieldType.IsExported() {
+			continue
+		}
+
+		name := fieldType.Name
+		if tagName != "" {
+			tag := strings.Split(fieldType.Tag.Get(tagName), ",")
+			if tag[0] == "-" {
+				continue
+			}
+			if tag[0] != "" {
+				name = tag[0]
+			}
+			if slices.Contains(tag[1:], "omitempty") && value.Field(i).IsZero() {
+				continue
+			}
+		}
+
+		key := name
+		if prefix != "" {
+			key = prefix + "." + name
+		}
+		fieldValue := value.Field(i)
+		if fieldValue.Kind() == reflect.Struct {
+			kv = appendStructKV(kv, fieldValue, tagName, key)
+			continue
+		}
+		kv = append(kv, fmt.Sprintf("%s=%v", key, fieldValue.Interface()))
+	}
+	return kv
 }
 
 func MapToKV(m map[string]any) (kv []string) {
