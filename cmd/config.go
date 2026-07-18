@@ -11,7 +11,7 @@ import (
 
 	"github.com/mzz2017/gg/common"
 	"github.com/mzz2017/gg/config"
-	"github.com/pelletier/go-toml"
+	"github.com/pelletier/go-toml/v2"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -113,7 +113,7 @@ func init() {
 func WriteConfig(settings map[string]interface{}, configPath string) error {
 	_ = os.MkdirAll(filepath.Dir(configPath), 0755)
 	buf := new(bytes.Buffer)
-	if err := toml.NewEncoder(buf).SetTagName("mapstructure").Encode(settings); err != nil {
+	if err := toml.NewEncoder(buf).Encode(settings); err != nil {
 		return err
 	}
 	if err := os.WriteFile(configPath, buf.Bytes(), 0600); err != nil {
