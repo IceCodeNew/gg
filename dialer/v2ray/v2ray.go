@@ -2,20 +2,21 @@ package v2ray
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
-	"github.com/daeuniverse/outbound/protocol"
-	"github.com/daeuniverse/outbound/transport/grpc"
-	jsoniter "github.com/json-iterator/go"
-	"github.com/mzz2017/gg/common"
-	"github.com/mzz2017/gg/dialer"
-	"github.com/mzz2017/gg/dialer/transport/tls"
-	"github.com/mzz2017/gg/dialer/transport/ws"
-	"gopkg.in/yaml.v3"
 	"net"
 	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/daeuniverse/outbound/protocol"
+	"github.com/daeuniverse/outbound/transport/grpc"
+	"github.com/mzz2017/gg/common"
+	"github.com/mzz2017/gg/dialer"
+	"github.com/mzz2017/gg/dialer/transport/tls"
+	"github.com/mzz2017/gg/dialer/transport/ws"
+	"gopkg.in/yaml.v3"
 )
 
 func init() {
@@ -41,6 +42,95 @@ type V2Ray struct {
 	AllowInsecure bool   `json:"allowInsecure"`
 	V             string `json:"v"`
 	Protocol      string `json:"protocol"`
+}
+
+type fuzzyString string
+
+type fuzzyBool bool
+
+func (s *fuzzyString) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" {
+		*s = ""
+		return nil
+	}
+	if len(data) > 0 && data[0] == '"' {
+		var value string
+		if err := json.Unmarshal(data, &value); err != nil {
+			return err
+		}
+		*s = fuzzyString(value)
+		return nil
+	}
+
+	var number json.Number
+	if err := json.Unmarshal(data, &number); err != nil {
+		return fmt.Errorf("expected string, number, or null: %w", err)
+	}
+	*s = fuzzyString(number.String())
+	return nil
+}
+
+func (b *fuzzyBool) UnmarshalJSON(data []byte) error {
+	switch string(data) {
+	case "true", "1":
+		*b = true
+		return nil
+	case "false", "0", "null":
+		*b = false
+		return nil
+	}
+	if len(data) > 0 && data[0] == '"' {
+		var value string
+		if err := json.Unmarshal(data, &value); err != nil {
+			return err
+		}
+		*b = fuzzyBool(common.StringToBool(value))
+		return nil
+	}
+	return fmt.Errorf("expected boolean, 0, 1, string, or null")
+}
+
+func unmarshalV2Ray(data []byte, result *V2Ray) error {
+	var decoded struct {
+		Ps            fuzzyString `json:"ps"`
+		Add           fuzzyString `json:"add"`
+		Port          fuzzyString `json:"port"`
+		ID            fuzzyString `json:"id"`
+		Aid           fuzzyString `json:"aid"`
+		Net           fuzzyString `json:"net"`
+		Type          fuzzyString `json:"type"`
+		Host          fuzzyString `json:"host"`
+		SNI           fuzzyString `json:"sni"`
+		Path          fuzzyString `json:"path"`
+		TLS           fuzzyString `json:"tls"`
+		Flow          fuzzyString `json:"flow"`
+		Alpn          fuzzyString `json:"alpn"`
+		AllowInsecure fuzzyBool   `json:"allowInsecure"`
+		V             fuzzyString `json:"v"`
+		Protocol      fuzzyString `json:"protocol"`
+	}
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return err
+	}
+	*result = V2Ray{
+		Ps:            string(decoded.Ps),
+		Add:           string(decoded.Add),
+		Port:          string(decoded.Port),
+		ID:            string(decoded.ID),
+		Aid:           string(decoded.Aid),
+		Net:           string(decoded.Net),
+		Type:          string(decoded.Type),
+		Host:          string(decoded.Host),
+		SNI:           string(decoded.SNI),
+		Path:          string(decoded.Path),
+		TLS:           string(decoded.TLS),
+		Flow:          string(decoded.Flow),
+		Alpn:          string(decoded.Alpn),
+		AllowInsecure: bool(decoded.AllowInsecure),
+		V:             string(decoded.V),
+		Protocol:      string(decoded.Protocol),
+	}
+	return nil
 }
 
 func NewV2Ray(link string, opt *dialer.GlobalOption) (*dialer.Dialer, error) {
@@ -320,10 +410,10 @@ func ParseVmessURL(vmess string) (data *V2Ray, err error) {
 		obfsParam := q.Get("obfsParam")
 		path := q.Get("path")
 		if obfs == "kcp" || obfs == "mkcp" {
-			m := make(map[string]string)
+			m := make(map[string]fuzzyString)
 			//cater to v2rayN definition
-			_ = jsoniter.Unmarshal([]byte(obfsParam), &m)
-			path = m["seed"]
+			_ = json.Unmarshal([]byte(obfsParam), &m)
+			path = string(m["seed"])
 			obfsParam = ""
 		}
 		aid := q.Get("alterId")
@@ -346,7 +436,7 @@ func ParseVmessURL(vmess string) (data *V2Ray, err error) {
 			info.Net = "ws"
 		}
 	} else {
-		err = jsoniter.Unmarshal([]byte(raw), &info)
+		err = unmarshalV2Ray([]byte(raw), &info)
 		if err != nil {
 			return
 		}
@@ -404,7 +494,7 @@ func (s *V2Ray) ExportToURL() string {
 		return U.String()
 	case "vmess":
 		s.V = "2"
-		b, _ := jsoniter.Marshal(s)
+		b, _ := json.Marshal(s)
 		return "vmess://" + strings.TrimSuffix(base64.StdEncoding.EncodeToString(b), "=")
 	}
 	//log.Warn("unexpected protocol: %v", v.Protocol)
