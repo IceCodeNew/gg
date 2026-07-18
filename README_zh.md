@@ -142,26 +142,8 @@ gg --subscription https://example.com/path/to/sub docker pull caddy
 gg --subscription https://example.com/path/to/sub --select curl ipv4.appspot.com
 ```
 
-> ```
-> WARN[0000] Test nodes...
-> Use the arrow keys to navigate: ↓ ↑ → ←  and / toggles search
-> Select Node
->   🛪 [200Mbps] LoadBalance (323 ms)
->     [200Mbps] LoadBalance Trojan (448 ms)
->     [30M] CN2-US Cera (560 ms)
->     [1Gbps] 4837-US (781 ms)
->     [10Gbps] CN2-DE (811 ms)
->     [300Mbps] Macau (1023 ms)
->     [300Mbps] IPv6 LoadBalance (-1 ms)
-> ↓   [1Gbps] RackNerd (-1 ms)
-> 
-> --------- Detail ----------
-> Name:               [200Mbps] LoadBalance
-> Protocol:           shadowsocks
-> Support UDP:        true
-> Latency:            323 ms
-> 
-> ```
+使用方向键移动，按 `/` 根据节点名称过滤，按 Enter 确认选择。
+当前高亮节点会显示协议、UDP 支持情况和实测延迟。
 
 ### 长期使用
 

@@ -4,7 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/1lann/promptui"
+	"net/url"
+	"sort"
+	"strings"
+	"sync"
+	"time"
+
+	"charm.land/huh/v2"
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/mzz2017/gg/common"
 	"github.com/mzz2017/gg/config"
@@ -12,11 +18,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"golang.org/x/tools/container/intsets"
-	"net/url"
-	"sort"
-	"strings"
-	"sync"
-	"time"
 )
 
 var UnableToConnectErr = fmt.Errorf("unable to connect to the proxy node")
@@ -257,6 +258,12 @@ func GetDialerFromSubscriptionLastNodeCache(opt *dialer.GlobalOption, testNode b
 }
 
 func selectNodeFromInput(nodes []*DialerWithLatency) (*DialerWithLatency, error) {
+	return selectNode(nodes, func(prompt *huh.Select[*DialerWithLatency]) error {
+		return prompt.Run()
+	})
+}
+
+func selectNode(nodes []*DialerWithLatency, run func(*huh.Select[*DialerWithLatency]) error) (*DialerWithLatency, error) {
 	sort.Slice(nodes, func(i, j int) bool {
 		vi := nodes[i].Latency
 		vj := nodes[j].Latency
@@ -268,35 +275,42 @@ func selectNodeFromInput(nodes []*DialerWithLatency) (*DialerWithLatency, error)
 		}
 		return vi < vj
 	})
-	templates := &promptui.SelectTemplates{
-		Label:    "{{ . }}",
-		Active:   "🛪 {{ .Dialer.Name | cyan }} ({{ .Latency | red }} ms)",
-		Inactive: "  {{ .Dialer.Name | cyan }} ({{ .Latency | red }} ms)",
-		Selected: "🛪 {{ .Dialer.Name | red | cyan }}",
-		Details: `
---------- Detail ----------
-{{ "Name:" | faint }}	{{ .Dialer.Name }}
-{{ "Protocol:" | faint }}	{{ .Dialer.Protocol }}
-{{ "Support UDP:" | faint }}	{{ .Dialer.SupportUDP }}
-{{ "Latency:" | faint }}	{{ .Latency }} ms`,
-	}
-	searcher := func(input string, index int) bool {
-		node := nodes[index]
-		name := strings.Replace(strings.ToLower(node.Dialer.Name()), " ", "", -1)
-		input = strings.Replace(strings.ToLower(input), " ", "", -1)
 
-		return strings.Contains(name, input)
+	options := make([]huh.Option[*DialerWithLatency], 0, len(nodes))
+	for _, node := range nodes {
+		options = append(options, huh.NewOption(
+			fmt.Sprintf("%s (%d ms)", node.Dialer.Name(), node.Latency),
+			node,
+		))
 	}
-	prompt := promptui.Select{
-		Label:     "Select Node",
-		Items:     nodes,
-		Templates: templates,
-		Size:      8,
-		Searcher:  searcher,
-	}
-	i, _, err := prompt.Run()
-	if err != nil {
+
+	var selected *DialerWithLatency
+	prompt := huh.NewSelect[*DialerWithLatency]().
+		Title("Select Node").
+		Options(options...).
+		Value(&selected).
+		DescriptionFunc(func() string {
+			return nodeDetails(selected)
+		}, &selected).
+		Height(15)
+	if err := run(prompt); err != nil {
 		return nil, err
 	}
-	return nodes[i], nil
+	if selected == nil {
+		return nil, fmt.Errorf("no node selected")
+	}
+	return selected, nil
+}
+
+func nodeDetails(node *DialerWithLatency) string {
+	if node == nil {
+		return ""
+	}
+	return fmt.Sprintf(
+		"--------- Detail ----------\nName:\t%s\nProtocol:\t%s\nSupport UDP:\t%t\nLatency:\t%d ms",
+		node.Dialer.Name(),
+		node.Dialer.Protocol(),
+		node.Dialer.SupportUDP(),
+		node.Latency,
+	)
 }
