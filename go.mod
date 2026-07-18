@@ -1,6 +1,10 @@
 module github.com/mzz2017/gg
 
-go 1.25.0
+go 1.26
+
+// Root builds preserve the public YAML v3 type identity while using the maintained implementation.
+// Downstream modules retain their independently selected gopkg.in/yaml.v3 implementation.
+replace gopkg.in/yaml.v3 => ./compat/yamlv3
 
 require (
 	github.com/1lann/promptui v0.8.1-0.20220708222609-81fad96dd5e1
@@ -52,6 +56,7 @@ require (
 	github.com/mzz2017/disk-bloom v1.0.1 // indirect
 	github.com/onsi/ginkgo/v2 v2.22.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
+	github.com/quic-go/qpack v0.5.1 // indirect
 	github.com/refraction-networking/utls v1.8.2 // indirect
 	github.com/sagikazarmark/locafero v0.11.0 // indirect
 	github.com/seiflotfy/cuckoofilter v0.0.0-20220411075957-e3b120b3f5fb // indirect
