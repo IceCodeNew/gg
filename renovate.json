@@ -17,6 +17,13 @@
       "internalChecksFilter": "strict"
     },
     {
+      "description": "Keep the downstream fixture pointed at the local gg checkout",
+      "matchManagers": ["gomod"],
+      "matchFileNames": ["testdata/downstream/go.mod"],
+      "matchPackageNames": ["github.com/mzz2017/gg"],
+      "enabled": false
+    },
+    {
       "matchUpdateTypes": ["minor", "patch"],
       "matchCurrentVersion": "!/^0/",
       "automerge": true
@@ -33,7 +40,7 @@
       "minimumReleaseAge": null
     }
   ],
-  "automergeType": "branch",
+  "automergeType": "pr",
   "postUpdateOptions": [
     "gomodMassage",
     "gomodTidy"
