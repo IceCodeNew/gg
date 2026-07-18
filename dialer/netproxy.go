@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/daeuniverse/outbound/netproxy"
+	"github.com/mzz2017/gg/dialer/internal/dialutil"
 	"golang.org/x/net/proxy"
 )
 
@@ -31,7 +32,7 @@ func (d *netproxyAdapter) DialContext(ctx context.Context, network, addr string)
 		return nil, err
 	}
 
-	conn, err := dialContext(ctx, d.dialer, magicNetwork.Network, addr)
+	conn, err := dialutil.DialContext(ctx, d.dialer, magicNetwork.Network, addr)
 	if err != nil {
 		return nil, err
 	}
@@ -45,37 +46,6 @@ func (d *netproxyAdapter) DialContext(ctx context.Context, network, addr string)
 		return nil, fmt.Errorf("UDP dialer returned %T, which does not implement net.PacketConn", conn)
 	}
 	return &netproxyPacketConn{conn: conn, packetConn: packetConn}, nil
-}
-
-func dialContext(ctx context.Context, d proxy.Dialer, network, addr string) (net.Conn, error) {
-	if d, ok := d.(interface {
-		DialContext(context.Context, string, string) (net.Conn, error)
-	}); ok {
-		return d.DialContext(ctx, network, addr)
-	}
-
-	type result struct {
-		conn net.Conn
-		err  error
-	}
-	resultCh := make(chan result, 1)
-	go func() {
-		conn, err := d.Dial(network, addr)
-		resultCh <- result{conn: conn, err: err}
-	}()
-
-	select {
-	case <-ctx.Done():
-		go func() {
-			result := <-resultCh
-			if result.conn != nil {
-				_ = result.conn.Close()
-			}
-		}()
-		return nil, ctx.Err()
-	case result := <-resultCh:
-		return result.conn, result.err
-	}
 }
 
 type netproxyPacketConn struct {
