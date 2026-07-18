@@ -11,6 +11,7 @@ import (
 
 	"github.com/coder/websocket"
 	"github.com/mzz2017/gg/common"
+	"github.com/mzz2017/gg/dialer/internal/dialutil"
 	"golang.org/x/net/proxy"
 )
 
@@ -29,7 +30,7 @@ func NewWs(s string, d proxy.Dialer) (*Ws, error) {
 
 	transport := &http.Transport{
 		DialContext: func(ctx context.Context, network, address string) (net.Conn, error) {
-			return dialContext(ctx, d, network, address)
+			return dialutil.DialContext(ctx, d, network, address)
 		},
 	}
 
@@ -76,35 +77,4 @@ func (s *Ws) Dial(network, addr string) (net.Conn, error) {
 		return nil, fmt.Errorf("[Ws]: dial to %s: %w", s.wsAddr, err)
 	}
 	return websocket.NetConn(context.Background(), rc, websocket.MessageBinary), nil
-}
-
-func dialContext(ctx context.Context, d proxy.Dialer, network, address string) (net.Conn, error) {
-	if d, ok := d.(interface {
-		DialContext(context.Context, string, string) (net.Conn, error)
-	}); ok {
-		return d.DialContext(ctx, network, address)
-	}
-
-	type result struct {
-		conn net.Conn
-		err  error
-	}
-	resultCh := make(chan result, 1)
-	go func() {
-		conn, err := d.Dial(network, address)
-		resultCh <- result{conn: conn, err: err}
-	}()
-
-	select {
-	case result := <-resultCh:
-		return result.conn, result.err
-	case <-ctx.Done():
-		go func() {
-			result := <-resultCh
-			if result.conn != nil {
-				_ = result.conn.Close()
-			}
-		}()
-		return nil, ctx.Err()
-	}
 }
