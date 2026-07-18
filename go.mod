@@ -10,7 +10,7 @@ require (
 	charm.land/huh/v2 v2.0.3
 	github.com/coder/websocket v1.8.15
 	github.com/daeuniverse/outbound v0.0.0-20260623082230-cfd9e39fd5e0
-	github.com/pelletier/go-toml v1.9.5
+	github.com/pelletier/go-toml/v2 v2.4.3
 	github.com/sagernet/sing v0.8.11
 	github.com/sagernet/sing-shadowsocks2 v0.2.1
 	github.com/sirupsen/logrus v1.9.4
@@ -65,7 +65,6 @@ require (
 	github.com/mzz2017/disk-bloom v1.0.1 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/onsi/ginkgo/v2 v2.22.2 // indirect
-	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/quic-go/qpack v0.5.1 // indirect
 	github.com/refraction-networking/utls v1.8.2 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
