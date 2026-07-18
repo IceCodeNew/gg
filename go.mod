@@ -10,7 +10,6 @@ require (
 	charm.land/huh/v2 v2.0.3
 	github.com/coder/websocket v1.8.14
 	github.com/daeuniverse/outbound v0.0.0-20260623082230-cfd9e39fd5e0
-	github.com/json-iterator/go v1.1.12
 	github.com/nadoo/glider v0.16.4
 	github.com/pelletier/go-toml v1.9.5
 	github.com/sagernet/sing v0.8.11
@@ -64,8 +63,6 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.3.0 // indirect
 	github.com/mattn/go-runewidth v0.0.20 // indirect
 	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/mzz2017/disk-bloom v1.0.1 // indirect
 	github.com/onsi/ginkgo/v2 v2.22.2 // indirect
