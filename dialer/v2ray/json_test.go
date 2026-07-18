@@ -45,6 +45,10 @@ func TestFuzzyBool(t *testing.T) {
 		{input: `"0"`},
 		{input: `"true"`, want: true},
 		{input: `"false"`},
+		{input: `"yes"`, want: true},
+		{input: `"no"`},
+		{input: `"Y"`, want: true},
+		{input: `"N"`},
 		{input: "null"},
 	}
 	for _, test := range tests {
@@ -56,7 +60,7 @@ func TestFuzzyBool(t *testing.T) {
 		}
 	}
 
-	for _, input := range []string{"2", `{}`, `[]`} {
+	for _, input := range []string{"2", `"2"`, `"maybe"`, `{}`, `[]`} {
 		var got fuzzyBool
 		if err := json.Unmarshal([]byte(input), &got); err == nil {
 			t.Errorf("json.Unmarshal(%s) unexpectedly succeeded", input)
@@ -66,17 +70,22 @@ func TestFuzzyBool(t *testing.T) {
 
 func TestExportVmessURLRoundTrip(t *testing.T) {
 	want := &V2Ray{
-		Ps:       "node",
-		Add:      "proxy.example",
-		Port:     "443",
-		ID:       "00000000-0000-0000-0000-000000000001",
-		Aid:      "0",
-		Net:      "ws",
-		Type:     "none",
-		Host:     "front.example",
-		Path:     "/tunnel",
-		TLS:      "tls",
-		Protocol: "vmess",
+		Ps:            "node",
+		Add:           "proxy.example",
+		Port:          "443",
+		ID:            "00000000-0000-0000-0000-000000000001",
+		Aid:           "0",
+		Net:           "ws",
+		Type:          "none",
+		Host:          "front.example",
+		SNI:           "origin.example",
+		Path:          "/tunnel",
+		TLS:           "tls",
+		Flow:          "xtls-rprx-vision",
+		Alpn:          "h2,http/1.1",
+		AllowInsecure: true,
+		V:             "2",
+		Protocol:      "vmess",
 	}
 
 	got, err := ParseVmessURL(want.ExportToURL())
