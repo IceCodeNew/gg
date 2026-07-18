@@ -149,26 +149,8 @@ Select the node manually:
 gg --subscription https://example.com/path/to/sub --select curl ipv4.appspot.com
 ```
 
-> ```
-> WARN[0000] Test nodes...
-> Use the arrow keys to navigate: ↓ ↑ → ←  and / toggles search
-> Select Node
->   🛪 [200Mbps] LoadBalance (323 ms)
->     [200Mbps] LoadBalance Trojan (448 ms)
->     [30M] CN2-US Cera (560 ms)
->     [1Gbps] 4837-US (781 ms)
->     [10Gbps] CN2-DE (811 ms)
->     [300Mbps] Macau (1023 ms)
->     [300Mbps] IPv6 LoadBalance (-1 ms)
-> ↓   [1Gbps] RackNerd (-1 ms)
->
-> --------- Detail ----------
-> Name:               [200Mbps] LoadBalance
-> Protocol:           shadowsocks
-> Support UDP:        true
-> Latency:            323 ms
->
-> ```
+Use the arrow keys to navigate, `/` to filter by node name, and Enter to select.
+The highlighted node shows its protocol, UDP support, and measured latency.
 
 ### Long-term use
 
