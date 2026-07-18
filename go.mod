@@ -8,7 +8,7 @@ replace gopkg.in/yaml.v3 => ./compat/yamlv3
 
 require (
 	charm.land/huh/v2 v2.0.3
-	github.com/coder/websocket v1.8.14
+	github.com/coder/websocket v1.8.15
 	github.com/daeuniverse/outbound v0.0.0-20260623082230-cfd9e39fd5e0
 	github.com/pelletier/go-toml v1.9.5
 	github.com/sagernet/sing v0.8.11
