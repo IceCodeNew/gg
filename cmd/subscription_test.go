@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/mzz2017/gg/dialer"
+	_ "github.com/mzz2017/gg/dialer/anytls"
 	_ "github.com/mzz2017/gg/dialer/hysteria2"
 	_ "github.com/mzz2017/gg/dialer/socks"
 )
@@ -43,6 +44,22 @@ func TestResolveSubscriptionAsClash(t *testing.T) {
 				t.Fatal("expected UDP support")
 			}
 		})
+	}
+}
+
+func TestResolveSubscriptionAsBase64AnyTLS(t *testing.T) {
+	link := "anytls://test-auth@192.0.2.1:443?sni=proxy.example&insecure=1#anytls-node"
+	subscription := []byte(base64.StdEncoding.EncodeToString([]byte(link)))
+
+	dialers := resolveSubscriptionAsBase64(NewLogger(0), &dialer.GlobalOption{}, subscription)
+	if len(dialers) != 1 {
+		t.Fatalf("dialers = %d, want 1", len(dialers))
+	}
+	if got := dialers[0].Protocol(); got != "anytls" {
+		t.Fatalf("protocol = %q, want anytls", got)
+	}
+	if !dialers[0].SupportUDP() {
+		t.Fatal("expected UDP support")
 	}
 }
 
