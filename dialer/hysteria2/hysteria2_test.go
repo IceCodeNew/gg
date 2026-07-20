@@ -54,3 +54,17 @@ func TestNewFromClashWithoutPassword(t *testing.T) {
 		t.Fatalf("unexpected empty user info in link %q", got.Link())
 	}
 }
+
+func TestNewFromClashUDPDisabled(t *testing.T) {
+	var node yaml.Node
+	if err := yaml.Unmarshal([]byte("name: clash-hy2\ntype: hysteria2\nserver: 192.0.2.1\nport: 443\npassword: secret\nudp: false\n"), &node); err != nil {
+		t.Fatal(err)
+	}
+	got, err := NewFromClash(&node, &dialer.GlobalOption{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.SupportUDP() {
+		t.Fatal("expected UDP support to be disabled")
+	}
+}
