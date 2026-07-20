@@ -12,6 +12,7 @@ import (
 	_ "github.com/daeuniverse/outbound/protocol/vless"
 	_ "github.com/daeuniverse/outbound/protocol/vmess"
 	_ "github.com/mzz2017/gg/dialer/http"
+	_ "github.com/mzz2017/gg/dialer/hysteria2"
 	_ "github.com/mzz2017/gg/dialer/shadowsocks"
 	_ "github.com/mzz2017/gg/dialer/shadowsocksr"
 	_ "github.com/mzz2017/gg/dialer/socks"
