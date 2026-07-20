@@ -99,9 +99,7 @@ $ gg git clone https://github.com/mzz2017/gg.git`)
 			} else {
 				noUDP = v.GetBool("no_udp")
 			}
-			if !noUDP && !dialer.SupportUDP() {
-				log.Info("Your proxy server does not support UDP, so we will not redirect UDP traffic.")
-			}
+			logUDPRedirectLimitation(log, noUDP, dialer.SupportUDP())
 			// Get proxy_private from argument first, then from configuration file.
 			var proxyPrivate bool
 			proxyPrivateFlag := cmd.Flags().Lookup("proxyprivate")
@@ -166,6 +164,12 @@ func init() {
 func configureCommandPassthrough(command *cobra.Command) {
 	command.Args = cobra.ArbitraryArgs
 	command.Flags().SetInterspersed(false)
+}
+
+func logUDPRedirectLimitation(log *logrus.Logger, noUDP, supportUDP bool) {
+	if !noUDP && !supportUDP {
+		log.Info("UDP redirection is disabled or unsupported for this node; DNS traffic may still be handled.")
+	}
 }
 
 func NewLogger(verbose int) *logrus.Logger {
