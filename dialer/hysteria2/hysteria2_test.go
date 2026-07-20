@@ -38,3 +38,19 @@ func TestNewFromClash(t *testing.T) {
 		t.Fatalf("metadata = (%q, udp=%v)", got.Name(), got.SupportUDP())
 	}
 }
+
+func TestNewFromClashWithoutPassword(t *testing.T) {
+	var node yaml.Node
+	if err := yaml.Unmarshal([]byte("name: clash-hy2\ntype: hysteria2\nserver: 192.0.2.1\nport: 443\n"), &node); err != nil {
+		t.Fatal(err)
+	}
+	got, err := NewFromClash(&node, &dialer.GlobalOption{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if parsed, err := url.Parse(got.Link()); err != nil {
+		t.Fatal(err)
+	} else if parsed.User != nil {
+		t.Fatalf("unexpected empty user info in link %q", got.Link())
+	}
+}

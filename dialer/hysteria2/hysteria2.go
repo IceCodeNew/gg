@@ -33,12 +33,17 @@ func New(link string, option *dialer.GlobalOption) (*dialer.Dialer, error) {
 	if err != nil {
 		return nil, err
 	}
+	exportedLink := property.Link
+	if parsed, parseErr := url.Parse(exportedLink); parseErr == nil && parsed.User != nil && parsed.User.Username() == "" {
+		parsed.User = nil
+		exportedLink = parsed.String()
+	}
 	return dialer.NewDialer(
 		dialer.FromNetproxyDialer(proxyDialer),
 		true,
 		property.Name,
 		property.Protocol,
-		property.Link,
+		exportedLink,
 	), nil
 }
 
@@ -62,10 +67,14 @@ func NewFromClash(node *yaml.Node, option *dialer.GlobalOption) (*dialer.Dialer,
 	if proxy.SkipCertVerify {
 		query.Set("insecure", "1")
 	}
+	var user *url.Userinfo
+	if proxy.Password != "" {
+		user = url.User(proxy.Password)
+	}
 	link := url.URL{
 		Scheme:   "hysteria2",
 		Host:     net.JoinHostPort(proxy.Server, strconv.Itoa(proxy.Port)),
-		User:     url.User(proxy.Password),
+		User:     user,
 		RawQuery: query.Encode(),
 		Fragment: proxy.Name,
 	}
