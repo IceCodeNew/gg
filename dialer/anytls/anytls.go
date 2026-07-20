@@ -27,6 +27,7 @@ func NewFromClash(node *yaml.Node, option *dialer.GlobalOption) (*dialer.Dialer,
 		Password       string `yaml:"password"`
 		SNI            string `yaml:"sni"`
 		SkipCertVerify bool   `yaml:"skip-cert-verify"`
+		UDP            *bool  `yaml:"udp,omitempty"`
 	}
 	if err := node.Decode(&proxy); err != nil {
 		return nil, err
@@ -49,7 +50,18 @@ func NewFromClash(node *yaml.Node, option *dialer.GlobalOption) (*dialer.Dialer,
 		RawQuery: query.Encode(),
 		Fragment: proxy.Name,
 	}
-	return New(link.String(), option)
+	result, err := New(link.String(), option)
+	if err != nil {
+		return nil, err
+	}
+	supportUDP := true
+	if proxy.UDP != nil {
+		supportUDP = *proxy.UDP
+	}
+	if supportUDP == result.SupportUDP() {
+		return result, nil
+	}
+	return dialer.NewDialer(result.Dialer, supportUDP, result.Name(), result.Protocol(), result.Link()), nil
 }
 
 // New creates an AnyTLS dialer from a share link.

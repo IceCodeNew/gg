@@ -47,3 +47,17 @@ func TestNewFromClash(t *testing.T) {
 		t.Fatalf("metadata = (%q, %q, udp=%v)", got.Name(), got.Protocol(), got.SupportUDP())
 	}
 }
+
+func TestNewFromClashUDPDisabled(t *testing.T) {
+	var node yaml.Node
+	if err := yaml.Unmarshal([]byte("name: clash-anytls\ntype: anytls\nserver: 192.0.2.1\nport: 443\npassword: secret\nudp: false\n"), &node); err != nil {
+		t.Fatal(err)
+	}
+	got, err := NewFromClash(&node, &dialer.GlobalOption{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.SupportUDP() {
+		t.Fatal("expected UDP support to be disabled")
+	}
+}

@@ -56,6 +56,7 @@ func TestResolveSubscriptionAsClashAnyTLS(t *testing.T) {
     password: secret
     sni: proxy.example
     skip-cert-verify: true
+    udp: false
 `)
 	dialers, err := resolveSubscriptionAsClash(NewLogger(0), &dialer.GlobalOption{}, config)
 	if err != nil {
@@ -66,6 +67,9 @@ func TestResolveSubscriptionAsClashAnyTLS(t *testing.T) {
 	}
 	if dialers[0].Protocol() != "anytls" {
 		t.Fatalf("protocol = %q, want anytls", dialers[0].Protocol())
+	}
+	if dialers[0].SupportUDP() {
+		t.Fatal("expected UDP support to be disabled")
 	}
 }
 
