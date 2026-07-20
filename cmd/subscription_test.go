@@ -47,6 +47,28 @@ func TestResolveSubscriptionAsClash(t *testing.T) {
 	}
 }
 
+func TestResolveSubscriptionAsClashAnyTLS(t *testing.T) {
+	config := []byte(`proxies:
+  - name: clash-anytls
+    type: anytls
+    server: 192.0.2.1
+    port: 443
+    password: secret
+    sni: proxy.example
+    skip-cert-verify: true
+`)
+	dialers, err := resolveSubscriptionAsClash(NewLogger(0), &dialer.GlobalOption{}, config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(dialers) != 1 {
+		t.Fatalf("dialers = %d, want 1", len(dialers))
+	}
+	if dialers[0].Protocol() != "anytls" {
+		t.Fatalf("protocol = %q, want anytls", dialers[0].Protocol())
+	}
+}
+
 func TestResolveSubscriptionAsBase64AnyTLS(t *testing.T) {
 	link := "anytls://test-auth@192.0.2.1:443?sni=proxy.example&insecure=1#anytls-node"
 	subscription := []byte(base64.StdEncoding.EncodeToString([]byte(link)))

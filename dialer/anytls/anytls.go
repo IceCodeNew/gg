@@ -2,14 +2,54 @@
 package anytls
 
 import (
+	"net"
+	"net/url"
+	"strconv"
+
 	outbounddialer "github.com/daeuniverse/outbound/dialer"
 	outboundanytls "github.com/daeuniverse/outbound/dialer/anytls"
 	_ "github.com/daeuniverse/outbound/protocol/anytls"
 	"github.com/mzz2017/gg/dialer"
+	"gopkg.in/yaml.v3"
 )
 
 func init() {
 	dialer.FromLinkRegister("anytls", New)
+	dialer.FromClashRegister("anytls", NewFromClash)
+}
+
+// NewFromClash creates an AnyTLS dialer from a Clash proxy entry.
+func NewFromClash(node *yaml.Node, option *dialer.GlobalOption) (*dialer.Dialer, error) {
+	var proxy struct {
+		Name           string `yaml:"name"`
+		Server         string `yaml:"server"`
+		Port           int    `yaml:"port"`
+		Password       string `yaml:"password"`
+		SNI            string `yaml:"sni"`
+		SkipCertVerify bool   `yaml:"skip-cert-verify"`
+	}
+	if err := node.Decode(&proxy); err != nil {
+		return nil, err
+	}
+	query := url.Values{}
+	if proxy.SNI != "" {
+		query.Set("sni", proxy.SNI)
+	}
+	if proxy.SkipCertVerify {
+		query.Set("insecure", "1")
+	}
+	var user *url.Userinfo
+	if proxy.Password != "" {
+		user = url.User(proxy.Password)
+	}
+	link := url.URL{
+		Scheme:   "anytls",
+		Host:     net.JoinHostPort(proxy.Server, strconv.Itoa(proxy.Port)),
+		User:     user,
+		RawQuery: query.Encode(),
+		Fragment: proxy.Name,
+	}
+	return New(link.String(), option)
 }
 
 // New creates an AnyTLS dialer from a share link.

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/mzz2017/gg/dialer"
+	"gopkg.in/yaml.v3"
 )
 
 func TestNew(t *testing.T) {
@@ -30,5 +31,19 @@ func TestNew(t *testing.T) {
 	}
 	if link.Scheme != "anytls" {
 		t.Fatalf("link scheme = %q, want anytls", link.Scheme)
+	}
+}
+
+func TestNewFromClash(t *testing.T) {
+	var node yaml.Node
+	if err := yaml.Unmarshal([]byte("name: clash-anytls\ntype: anytls\nserver: 192.0.2.1\nport: 443\npassword: secret\nsni: proxy.example\nskip-cert-verify: true\n"), &node); err != nil {
+		t.Fatal(err)
+	}
+	got, err := NewFromClash(&node, &dialer.GlobalOption{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Name() != "clash-anytls" || got.Protocol() != "anytls" || !got.SupportUDP() {
+		t.Fatalf("metadata = (%q, %q, udp=%v)", got.Name(), got.Protocol(), got.SupportUDP())
 	}
 }
