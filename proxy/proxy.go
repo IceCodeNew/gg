@@ -14,7 +14,10 @@ import (
 )
 
 type Proxy struct {
-	mutex        sync.Mutex      // mutex protects the mappers
+	mutex        sync.Mutex // mutex protects the mappers
+	lifecycleMu  sync.Mutex // lifecycleMu protects listener setup and shutdown
+	closeOnce    sync.Once
+	closeErr     error
 	addrMapper   *LoopbackMapper // addrMapper projects an address to a loopback IP
 	domainMapper *ReservedMapper // domainMapper projects a domain to a reserved IP
 	realIPMapper *RealIPMapper   // realIPMapper projects a fake IP to a real IP
@@ -101,12 +104,24 @@ func (p *Proxy) ListenTCP(addr string) (err error) {
 	if err != nil {
 		return err
 	}
-	p.listener = lt
+	p.lifecycleMu.Lock()
+	select {
+	case <-p.closed:
+		p.lifecycleMu.Unlock()
+		return lt.Close()
+	default:
+		p.listener = lt
+	}
+	p.lifecycleMu.Unlock()
 	close(p.tcpListened)
 	for {
 		conn, err := lt.Accept()
 		if err != nil {
+			if errors.Is(err, net.ErrClosed) {
+				return nil
+			}
 			p.log.Infof("%v", err)
+			continue
 		}
 		go func() {
 			err := p.handleTCP(conn)
@@ -130,7 +145,15 @@ func (p *Proxy) ListenUDP(addr string) (err error) {
 	if err != nil {
 		return err
 	}
-	p.udpConn = lu
+	p.lifecycleMu.Lock()
+	select {
+	case <-p.closed:
+		p.lifecycleMu.Unlock()
+		return lu.Close()
+	default:
+		p.udpConn = lu
+	}
+	p.lifecycleMu.Unlock()
 	var buf [ip_mtu_trie.MTU]byte
 	for {
 		n, lAddr, err := lu.ReadFrom(buf[:])
@@ -162,16 +185,20 @@ func (p *Proxy) UDPPort() int {
 }
 
 func (p *Proxy) Close() error {
-	close(p.closed)
-	var err error
-	if p.listener != nil {
-		err = p.listener.Close()
-	}
-	if p.udpConn != nil {
-		err2 := p.udpConn.Close()
-		if err == nil {
-			err = err2
+	p.closeOnce.Do(func() {
+		p.lifecycleMu.Lock()
+		defer p.lifecycleMu.Unlock()
+
+		close(p.closed)
+		if p.listener != nil {
+			p.closeErr = p.listener.Close()
 		}
-	}
-	return err
+		if p.udpConn != nil {
+			err := p.udpConn.Close()
+			if p.closeErr == nil {
+				p.closeErr = err
+			}
+		}
+	})
+	return p.closeErr
 }
