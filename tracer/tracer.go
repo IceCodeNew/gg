@@ -73,13 +73,18 @@ func New(ctx context.Context, name string, argv []string, attr *os.ProcAttr, dia
 		attr.Sys.Pdeathsig = syscall.SIGCHLD
 		proc, err := os.StartProcess(name, argv, attr)
 		if err != nil {
-			close(done)
 			t.exitErr = err
+			close(done)
 			return
 		}
 		t.proc = proc
+		if err := waitForInitialTraceStop(proc.Pid); err != nil {
+			t.exitErr = err
+			close(done)
+			_ = proc.Kill()
+			return
+		}
 		close(done)
-		time.Sleep(1 * time.Millisecond)
 		code, err := t.trace()
 		t.exitCode = code
 		t.exitErr = err
@@ -95,6 +100,21 @@ func New(ctx context.Context, name string, argv []string, attr *os.ProcAttr, dia
 	return t, nil
 }
 
+func waitForInitialTraceStop(pid int) error {
+	var status syscall.WaitStatus
+	wpid, err := syscall.Wait4(pid, &status, syscall.WALL|syscall.WUNTRACED, nil)
+	if err != nil {
+		return fmt.Errorf("wait for initial ptrace stop: %w", err)
+	}
+	if wpid != pid {
+		return fmt.Errorf("wait for initial ptrace stop: got pid %d, want %d", wpid, pid)
+	}
+	if !status.Stopped() || status.StopSignal() != syscall.SIGTRAP {
+		return fmt.Errorf("wait for initial ptrace stop: unexpected status %#x", uint32(status))
+	}
+	return nil
+}
+
 func (t *Tracer) Wait() (exitCode int, err error) {
 	<-t.closed
 	return t.exitCode, t.exitErr
@@ -104,17 +124,6 @@ func (t *Tracer) Wait() (exitCode int, err error) {
 func (t *Tracer) trace() (exitCode int, err error) {
 	proc := t.proc.Pid
 	// Thanks https://stackoverflow.com/questions/5477976/how-to-ptrace-a-multi-threaded-application and https://github.com/hmgle/graftcp
-	err = syscall.PtraceAttach(proc)
-	if err != nil {
-		if err == syscall.EPERM {
-			_, err = syscall.PtraceGetEventMsg(proc)
-			if err != nil {
-				return 0, err
-			}
-		} else {
-			return 0, err
-		}
-	}
 	options := syscall.PTRACE_O_TRACECLONE | syscall.PTRACE_O_TRACEFORK |
 		syscall.PTRACE_O_TRACEVFORK | syscall.PTRACE_O_TRACEEXEC
 	if err = syscall.PtraceSetOptions(proc, options); err != nil {
