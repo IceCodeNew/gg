@@ -73,15 +73,18 @@ func New(ctx context.Context, name string, argv []string, attr *os.ProcAttr, dia
 		attr.Sys.Pdeathsig = syscall.SIGCHLD
 		proc, err := os.StartProcess(name, argv, attr)
 		if err != nil {
+			_ = t.proxy.Close()
 			t.exitErr = err
 			close(done)
 			return
 		}
 		t.proc = proc
 		if err := waitForInitialTraceStop(proc.Pid); err != nil {
+			_ = proc.Kill()
+			_, _ = proc.Wait()
+			_ = t.proxy.Close()
 			t.exitErr = err
 			close(done)
-			_ = proc.Kill()
 			return
 		}
 		close(done)
@@ -101,10 +104,24 @@ func New(ctx context.Context, name string, argv []string, attr *os.ProcAttr, dia
 }
 
 func waitForInitialTraceStop(pid int) error {
+	return waitForInitialTraceStopWith(pid, syscall.Wait4)
+}
+
+type wait4Func func(int, *syscall.WaitStatus, int, *syscall.Rusage) (int, error)
+
+func waitForInitialTraceStopWith(pid int, wait4 wait4Func) error {
 	var status syscall.WaitStatus
-	wpid, err := syscall.Wait4(pid, &status, syscall.WALL|syscall.WUNTRACED, nil)
-	if err != nil {
-		return fmt.Errorf("wait for initial ptrace stop: %w", err)
+	var wpid int
+	for {
+		var err error
+		wpid, err = wait4(pid, &status, syscall.WALL|syscall.WUNTRACED, nil)
+		if err == syscall.EINTR {
+			continue
+		}
+		if err != nil {
+			return fmt.Errorf("wait for initial ptrace stop: %w", err)
+		}
+		break
 	}
 	if wpid != pid {
 		return fmt.Errorf("wait for initial ptrace stop: got pid %d, want %d", wpid, pid)
