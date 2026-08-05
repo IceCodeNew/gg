@@ -11,7 +11,7 @@ require (
 	github.com/coder/websocket v1.8.15
 	github.com/daeuniverse/outbound v0.0.0-20260623082230-cfd9e39fd5e0
 	github.com/pelletier/go-toml/v2 v2.4.3
-	github.com/sagernet/sing v0.8.11
+	github.com/sagernet/sing v0.8.12
 	github.com/sagernet/sing-shadowsocks2 v0.2.1
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/cobra v1.10.2
