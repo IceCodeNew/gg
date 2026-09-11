@@ -1,6 +1,6 @@
 module github.com/mzz2017/gg
 
-go 1.26
+go 1.26.0
 
 // Root builds preserve the public YAML v3 type identity while using the maintained implementation.
 // Downstream modules retain their independently selected gopkg.in/yaml.v3 implementation.
@@ -11,13 +11,13 @@ require (
 	github.com/coder/websocket v1.8.15
 	github.com/daeuniverse/outbound v0.0.0-20260623082230-cfd9e39fd5e0
 	github.com/pelletier/go-toml/v2 v2.4.3
-	github.com/sagernet/sing v0.9.0
+	github.com/sagernet/sing v0.9.3
 	github.com/sagernet/sing-shadowsocks2 v0.2.1
 	github.com/sirupsen/logrus v1.10.2
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
 	golang.org/x/net v0.58.0
-	golang.org/x/sys v0.47.0
+	golang.org/x/sys v0.48.0
 	golang.org/x/tools v0.49.0
 	gopkg.in/yaml.v3 v3.0.1
 )
