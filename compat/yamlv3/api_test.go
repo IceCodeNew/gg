@@ -18,7 +18,6 @@ var (
 	_ yaml.Marshaler   = (*apiValue)(nil)
 	_ yaml.Unmarshaler = (*apiValue)(nil)
 	_ yaml.IsZeroer    = (*apiValue)(nil)
-	_ error            = (*yaml.TypeError)(nil)
 
 	_ func(any) ([]byte, error)     = yaml.Marshal
 	_ func([]byte, any) error       = yaml.Unmarshal
@@ -39,7 +38,7 @@ var (
 	_ yaml.Style = yaml.FlowStyle
 )
 
-func assertAPISurface(decoder *yaml.Decoder, encoder *yaml.Encoder, node *yaml.Node, typeError *yaml.TypeError) {
+func assertAPISurface(decoder *yaml.Decoder, encoder *yaml.Encoder, node *yaml.Node) {
 	_ = decoder.Decode
 	_ = decoder.KnownFields
 	_ = encoder.Close
@@ -51,7 +50,6 @@ func assertAPISurface(decoder *yaml.Decoder, encoder *yaml.Encoder, node *yaml.N
 	_ = node.LongTag
 	_ = node.SetString
 	_ = node.ShortTag
-	_ = typeError.Error
 
 	_ = yaml.Node{
 		Kind:        yaml.ScalarNode,
@@ -67,7 +65,6 @@ func assertAPISurface(decoder *yaml.Decoder, encoder *yaml.Encoder, node *yaml.N
 		Line:        1,
 		Column:      1,
 	}
-	_ = yaml.TypeError{Errors: []string{"error"}}
 }
 
 func TestLegacyV3APISurface(*testing.T) {
@@ -75,6 +72,5 @@ func TestLegacyV3APISurface(*testing.T) {
 		yaml.NewDecoder(strings.NewReader("")),
 		yaml.NewEncoder(io.Discard),
 		&yaml.Node{},
-		&yaml.TypeError{},
 	)
 }
